@@ -57,7 +57,7 @@ namespace SourceGit.Native
             }
         }
 
-        public static bool SetShell(Models.Shell shell)
+        public static bool SetShell(Models.Shell shell, bool opentInNewTab)
         {
             if (OperatingSystem.IsWindows())
             {
@@ -65,6 +65,11 @@ namespace SourceGit.Native
                 if (windows.Shell != shell)
                 {
                     windows.Shell = shell;
+                    return true;
+                }
+                if (windows.OpenInNewTab != opentInNewTab)
+                {
+                    windows.OpenInNewTab = opentInNewTab;
                     return true;
                 }
             }

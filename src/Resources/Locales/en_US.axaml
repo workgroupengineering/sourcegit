@@ -332,6 +332,7 @@
   <x:String x:Key="Text.Preference.Git.Email.Placeholder" xml:space="preserve">Global git user email</x:String>
   <x:String x:Key="Text.Preference.Git.Path" xml:space="preserve">Install Path</x:String>
   <x:String x:Key="Text.Preference.Git.Shell" xml:space="preserve">Shell</x:String>
+  <x:String x:Key="Text.Preference.Git.ShellOpenInNewTab" xml:space="preserve">Open Shell in a new tab</x:String>
   <x:String x:Key="Text.Preference.Git.User" xml:space="preserve">User Name</x:String>
   <x:String x:Key="Text.Preference.Git.User.Placeholder" xml:space="preserve">Global git user name</x:String>
   <x:String x:Key="Text.Preference.Git.Version" xml:space="preserve">Git version</x:String>

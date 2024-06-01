@@ -60,6 +60,8 @@ namespace SourceGit.Native
             set;
         } = Models.Shell.Default;
 
+        public bool OpenInNewTab { get; internal set; }
+
         public void SetupApp(AppBuilder builder)
         {
             builder.With(new FontManagerOptions()
@@ -163,7 +165,11 @@ namespace SourceGit.Native
                     }
 
                     startInfo.FileName = wt;
-                    startInfo.Arguments = $"-d \"{workdir}\"";
+                    if (OpenInNewTab)
+                    {
+                        startInfo.Arguments += "-w 0 nt ";
+                    }
+                    startInfo.Arguments += $"-d \"{workdir}\"";
                     break;
                 default:
                     App.RaiseException(workdir, $"Bad shell configuration!");

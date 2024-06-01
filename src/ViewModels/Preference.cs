@@ -224,9 +224,22 @@ namespace SourceGit.ViewModels
             get => Native.OS.GetShell();
             set
             {
-                if (Native.OS.SetShell(value))
+                if (Native.OS.SetShell(value, GitShellOnNewTab))
                 {
                     OnPropertyChanged(nameof(GitShell));
+                }
+            }
+        }
+
+        public bool GitShellOnNewTab
+        {
+            get => _gitShellOnNewTab;
+            set
+            {
+                if (Native.OS.SetShell(GitShell, value))
+                {
+                    _gitShellOnNewTab = value;
+                    OnPropertyChanged(nameof(GitShellOnNewTab));
                 }
             }
         }
@@ -546,6 +559,8 @@ namespace SourceGit.ViewModels
         private string _externalMergeToolPath = string.Empty;
 
         private AvaloniaList<RepositoryNode> _repositoryNodes = new AvaloniaList<RepositoryNode>();
+
+        private bool _gitShellOnNewTab;
     }
 
     public class FontFamilyConverter : JsonConverter<FontFamily>
