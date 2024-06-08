@@ -15,7 +15,7 @@ namespace SourceGit.Native
             string FindGitExecutable();
             List<Models.ExternalTool> FindExternalTools();
 
-            void OpenTerminal(string workdir);
+            void OpenTerminal(string workdir, string tabColor);
             void OpenInFileManager(string path, bool select);
             void OpenBrowser(string url);
             void OpenWithDefaultEditor(string file);
@@ -105,9 +105,9 @@ namespace SourceGit.Native
             _backend.OpenBrowser(url);
         }
 
-        public static void OpenTerminal(string workdir)
+        public static void OpenTerminal(string workdir, string tabColor = default)
         {
-            _backend.OpenTerminal(workdir);
+            _backend.OpenTerminal(workdir, tabColor);
         }
 
         public static void OpenWithDefaultEditor(string file)

@@ -99,7 +99,7 @@ namespace SourceGit.Native
             }
         }
 
-        public void OpenTerminal(string workdir)
+        public void OpenTerminal(string workdir, string _)
         {
             var dir = string.IsNullOrEmpty(workdir) ? "~" : workdir;
             if (_terminal == null)

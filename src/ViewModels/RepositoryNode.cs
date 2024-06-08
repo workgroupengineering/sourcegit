@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 
 using Avalonia.Collections;
-
+using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace SourceGit.ViewModels
@@ -78,7 +78,16 @@ namespace SourceGit.ViewModels
         {
             if (!IsRepository)
                 return;
-            Native.OS.OpenTerminal(_id);
+            string tabColor = null;
+            if (Bookmark >= 0)
+            {
+                
+                if (Models.Bookmarks.Brushes[Bookmark] is ISolidColorBrush brush)
+                {
+                    tabColor = $"#{brush.Color.R:X2}{brush.Color.G:X2}{brush.Color.B:X2}";
+                }
+            }
+            Native.OS.OpenTerminal(_id, tabColor);
         }
 
         public void Delete()
@@ -93,6 +102,6 @@ namespace SourceGit.ViewModels
         private int _bookmark = 0;
         private bool _isExpanded = false;
         private bool _isVisible = true;
-        private AvaloniaList<RepositoryNode> _subNodes = new AvaloniaList<RepositoryNode>();
+        private AvaloniaList<RepositoryNode> _subNodes = [];
     }
 }

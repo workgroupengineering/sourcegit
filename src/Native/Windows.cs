@@ -126,7 +126,7 @@ namespace SourceGit.Native
             Process.Start(info);
         }
 
-        public void OpenTerminal(string workdir)
+        public void OpenTerminal(string workdir, string tabColor)
         {
             if (string.IsNullOrEmpty(workdir) || !Path.Exists(workdir))
             {
@@ -164,12 +164,23 @@ namespace SourceGit.Native
                         return;
                     }
 
+                    var tilte = workdir == "." ? Path.GetDirectoryName(workdir) : workdir;
+                    if (tilte.LastIndexOf('/') is int i && i > -1)
+                    {
+                        tilte = tilte[(i + 1)..];
+                    }
+
                     startInfo.FileName = wt;
                     if (OpenInNewTab)
                     {
                         startInfo.Arguments += "-w 0 nt ";
+                        if (!string.IsNullOrEmpty(tabColor))
+                        {
+                            startInfo.Arguments += $"--tabColor \"{tabColor}\" ";
+                        }
                     }
-                    startInfo.Arguments += $"-d \"{workdir}\"";
+
+                    startInfo.Arguments += $"--title \"{tilte}\" -d \"{workdir}\"";
                     break;
                 default:
                     App.RaiseException(workdir, $"Bad shell configuration!");

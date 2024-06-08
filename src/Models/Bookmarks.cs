@@ -15,7 +15,7 @@ namespace SourceGit.Models
             Avalonia.Media.Brushes.Purple,
         ];
 
-        public static readonly List<int> Supported = new List<int>();
+        public static readonly List<int> Supported = [];
 
         static Bookmarks()
         {
