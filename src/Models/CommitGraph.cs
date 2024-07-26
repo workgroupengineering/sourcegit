@@ -109,6 +109,7 @@ namespace SourceGit.Models
             public DotType Type;
             public Point Center;
             public int Color;
+            public bool IsWorkCopy;
         }
 
         public List<Path> Paths { get; set; } = new List<Path>();
@@ -162,43 +163,46 @@ namespace SourceGit.Models
 
                 // Find first curves that links to this commit and marks others that links to this commit ended.
                 double offsetX = H_MARGIN - HALF_WIDTH;
-                foreach (var l in unsolved)
+                if (!string.IsNullOrEmpty(commit.SHA))
                 {
-                    if (l.Next == commit.SHA)
+                    foreach (var l in unsolved)
                     {
-                        if (major == null)
+                        if (l.Next == commit.SHA)
                         {
-                            offsetX += UNIT_WIDTH;
-                            major = l;
-
-                            if (commit.Parents.Count > 0)
+                            if (major == null)
                             {
-                                major.Next = commit.Parents[0];
-                                if (!mapUnsolved.ContainsKey(major.Next))
-                                    mapUnsolved.Add(major.Next, major);
+                                offsetX += UNIT_WIDTH;
+                                major = l;
+
+                                if (commit.Parents.Count > 0)
+                                {
+                                    major.Next = commit.Parents[0];
+                                    if (!mapUnsolved.ContainsKey(major.Next))
+                                        mapUnsolved.Add(major.Next, major);
+                                }
+                                else
+                                {
+                                    major.Next = "ENDED";
+                                    ended.Add(l);
+                                }
+
+                                major.Add(offsetX, offsetY, HALF_HEIGHT);
                             }
                             else
                             {
-                                major.Next = "ENDED";
                                 ended.Add(l);
                             }
 
-                            major.Add(offsetX, offsetY, HALF_HEIGHT);
+                            isMerged = isMerged || l.IsMerged;
+                            major.IsMerged = isMerged;
                         }
                         else
                         {
-                            ended.Add(l);
+                            if (!mapUnsolved.ContainsKey(l.Next))
+                                mapUnsolved.Add(l.Next, l);
+                            offsetX += UNIT_WIDTH;
+                            l.Add(offsetX, offsetY, HALF_HEIGHT);
                         }
-
-                        isMerged = isMerged || l.IsMerged;
-                        major.IsMerged = isMerged;
-                    }
-                    else
-                    {
-                        if (!mapUnsolved.ContainsKey(l.Next))
-                            mapUnsolved.Add(l.Next, l);
-                        offsetX += UNIT_WIDTH;
-                        l.Add(offsetX, offsetY, HALF_HEIGHT);
                     }
                 }
 
@@ -225,7 +229,8 @@ namespace SourceGit.Models
                     position = new Point(major.LastX, offsetY);
                     dotColor = major.Path.Color;
                 }
-                Dot anchor = new Dot() { Center = position, Color = dotColor };
+
+                Dot anchor = new Dot() { Center = position, Color = dotColor, IsWorkCopy = commit.IsWorkCopy  };
                 if (commit.IsCurrentHead)
                     anchor.Type = DotType.Head;
                 else if (commit.Parents.Count > 1)

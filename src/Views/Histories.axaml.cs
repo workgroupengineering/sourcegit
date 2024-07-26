@@ -480,7 +480,6 @@ namespace SourceGit.Views
 
                 var geo = new StreamGeometry();
                 var pen = Models.CommitGraph.Pens[line.Color];
-
                 using (var ctx = geo.Open())
                 {
                     var started = false;
@@ -549,8 +548,8 @@ namespace SourceGit.Views
                     ctx.BeginFigure(link.Start, false);
                     ctx.QuadraticBezierTo(link.Control, link.End);
                 }
-
-                context.DrawGeometry(null, Models.CommitGraph.Pens[link.Color], geo);
+                var pen = Models.CommitGraph.Pens[link.Color];
+                context.DrawGeometry(null, pen, geo);
             }
         }
 
@@ -567,6 +566,10 @@ namespace SourceGit.Views
                     break;
 
                 var pen = Models.CommitGraph.Pens[dot.Color];
+                if (dot.IsWorkCopy)
+                {
+                    pen = new Pen(pen.Brush, pen.Thickness, s_UncommittedCahngesLineDashStyle);
+                }
                 switch (dot.Type)
                 {
                     case Models.CommitGraph.DotType.Head:
@@ -584,6 +587,8 @@ namespace SourceGit.Views
                 }
             }
         }
+
+        private readonly static IDashStyle s_UncommittedCahngesLineDashStyle = new DashStyle() { Dashes = [1, 1], Offset = 1 };
     }
 
     public partial class Histories : UserControl

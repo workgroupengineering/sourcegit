@@ -209,7 +209,7 @@
             <TextBlock Classes="tab_header" Text="{DynamicResource Text.Preference.Git}"/>
           </TabItem.Header>
 
-          <Grid Margin="8" RowDefinitions="32,32,32,32,32" ColumnDefinitions="Auto,*">
+          <Grid Margin="8" RowDefinitions="32,32,32,32,32,32" ColumnDefinitions="Auto,*">
             <TextBlock Grid.Row="0" Grid.Column="0"
                        Text="{DynamicResource Text.Preference.Git.Path}"
                        HorizontalAlignment="Right"
@@ -280,6 +280,10 @@
                 </DataTemplate>
               </ComboBox.ItemTemplate>
             </ComboBox>
+            <CheckBox Grid.Row="5" Grid.Column="1"
+                      Content="{DynamicResource Text.Preference.Git.ShowUncommittedChangesInHistory}"
+                      IsChecked="{Binding ShowUncommittedChangesInHistory, Mode=TwoWay}"
+                      />
           </Grid>
         </TabItem>
 

@@ -15,6 +15,7 @@ namespace SourceGit.Views
             public Geometry Icon { get; set; } = null;
             public FormattedText Label { get; set; } = null;
             public IBrush LabelBG { get; set; } = null;
+            public bool IsWorkCopy { get; internal set; } = false;
         }
 
         public static readonly StyledProperty<List<Models.Decorator>> RefsProperty =
@@ -134,6 +135,14 @@ namespace SourceGit.Views
                 using (context.PushTransform(Matrix.CreateTranslation(x + 4, 4)))
                     context.DrawGeometry(iconFG, null, item.Icon);
 
+                if (item.IsWorkCopy)
+                {
+                    var workCopyBorderRect = new RoundedRect(new Rect(x, 0, 16 + item.Label.Width + 8, 16)
+                        , new CornerRadius(2, 0, 0, 2));
+                    var workCopyBorderPen = new Pen(item.LabelBG, 2, new DashStyle() { Dashes = [1, 1], Offset = 1 });
+                    context.DrawRectangle(null, workCopyBorderPen, workCopyBorderRect);
+                }
+
                 x += item.Label.Width + 16 + 8 + 4;
             }
         }
@@ -141,7 +150,7 @@ namespace SourceGit.Views
         protected override Size MeasureOverride(Size availableSize)
         {
             _items.Clear();
-
+            var isWorkCopy = this.DataContext is Models.Commit { IsWorkCopy: true };
             var refs = Refs;
             if (refs != null && refs.Count > 0)
             {
@@ -167,7 +176,12 @@ namespace SourceGit.Views
                         labelSize,
                         labelFG);
 
-                    var item = new RenderItem() { Label = label };
+                    var item = new RenderItem()
+                    {
+                        Label = label,
+                        IsWorkCopy = isWorkCopy,
+                    };
+
                     StreamGeometry geo;
                     switch (decorator.Type)
                     {

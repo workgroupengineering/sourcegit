@@ -817,6 +817,7 @@ namespace SourceGit.ViewModels
             Dispatcher.UIThread.Invoke(() => _histories.IsLoading = true);
 
             var limits = $"-{Preference.Instance.MaxHistoryCommits} ";
+            var showUncommitedChangedInHistory = Preference.Instance.ShowUncommittedChangesInHistory;
             if (_enableFirstParentInHistories)
                 limits += "--first-parent ";
 
@@ -852,8 +853,37 @@ namespace SourceGit.ViewModels
             {
                 limits += "--exclude=refs/stash --all";
             }
-
+            var currentBranch = _branches.Find(x => x.IsCurrent);
             var commits = new Commands.QueryCommits(_fullpath, limits).Result();
+            if (showUncommitedChangedInHistory)
+            {
+                var changes = new Commands.QueryLocalChanges(_fullpath, _includeUntracked).Result();
+                if(changes.Count > 0)
+                {
+                    var config = new Commands.Config(_fullpath).ListAll();
+                    var currentUser = new Models.User();
+                    if (config.TryGetValue("user.name", out var name))
+                        currentUser.Name = name;
+                    if (config.TryGetValue("user.email", out var email))
+                        currentUser.Email = email;
+                    var date = (ulong)DateTime.Now.ToUniversalTime().Subtract(DateTime.UnixEpoch).TotalSeconds;
+                    commits.Insert(0,new Models.Commit()
+                    {
+                        Subject = App.Text("Histories.UncommittedChanges.Subject"),
+                        Author = currentUser,
+                        Committer = currentUser,
+                        Parents = [currentBranch.Head],
+                        AuthorTime = date,
+                        CommitterTime = date,
+                        Decorators = [
+                            new Models.Decorator()
+                            {
+                                Type = Models.DecoratorType.CurrentBranchHead,
+                                Name = currentBranch.FriendlyName,
+                            }]
+                    });
+                }
+            }
             var graph = Models.CommitGraph.Parse(commits, _enableFirstParentInHistories);
 
             Dispatcher.UIThread.Invoke(() =>
@@ -879,29 +909,21 @@ namespace SourceGit.ViewModels
             });
         }
 
-        public void RefreshWorkingCopyChanges()
+        public async void RefreshWorkingCopyChanges()
         {
-            var changes = new Commands.QueryLocalChanges(_fullpath, _includeUntracked).Result();
             if (_workingCopy == null)
                 return;
 
-            var hasUnsolvedConflict = _workingCopy.SetData(changes);
-            var inProgress = null as InProgressContext;
-
-            if (File.Exists(Path.Combine(_gitDir, "CHERRY_PICK_HEAD")))
-                inProgress = new CherryPickInProgress(_fullpath);
-            else if (File.Exists(Path.Combine(_gitDir, "REBASE_HEAD")) && Directory.Exists(Path.Combine(_gitDir, "rebase-merge")))
-                inProgress = new RebaseInProgress(this);
-            else if (File.Exists(Path.Combine(_gitDir, "REVERT_HEAD")))
-                inProgress = new RevertInProgress(_fullpath);
-            else if (File.Exists(Path.Combine(_gitDir, "MERGE_HEAD")))
-                inProgress = new MergeInProgress(_fullpath);
+            var result = await _workingCopy.RefreshWorkingCopyChangesAsync();
+            var inProgress = result.InProgressContext;
+            var hasUnsolvedConflict = result.HasUnsolvedConflict;
+            var localChangesCount = result.LocalChangesCount;
 
             Dispatcher.UIThread.Invoke(() =>
             {
                 InProgressContext = inProgress;
                 HasUnsolvedConflicts = hasUnsolvedConflict;
-                LocalChangesCount = changes.Count;
+                LocalChangesCount = localChangesCount;
             });
         }
 

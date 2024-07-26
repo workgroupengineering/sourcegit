@@ -1362,6 +1362,31 @@ namespace SourceGit.ViewModels
             return false;
         }
 
+        public async Task<(InProgressContext InProgressContext, bool HasUnsolvedConflict,int LocalChangesCount)> RefreshWorkingCopyChangesAsync()
+        {
+            return await Task.Factory.StartNew(() =>
+            {
+                var gitDir = _repo.GitDir;
+                var fullpath = _repo.FullPath;
+                var changes = new Commands.QueryLocalChanges(fullpath, _repo.IncludeUntracked).Result();
+                var hasUnsolvedConflict = SetData(changes);
+                var inProgress = null as InProgressContext;
+
+                var rebaseMergeFolder = Path.Combine(gitDir, "rebase-merge");
+                var rebaseApplyFolder = Path.Combine(gitDir, "rebase-apply");
+                if (File.Exists(Path.Combine(gitDir, "CHERRY_PICK_HEAD")))
+                    inProgress = new CherryPickInProgress(fullpath);
+                else if (File.Exists(Path.Combine(gitDir, "REBASE_HEAD")) && Directory.Exists(Path.Combine(gitDir, "rebase-merge")))
+                    inProgress = new RebaseInProgress(_repo);
+                else if (File.Exists(Path.Combine(gitDir, "REVERT_HEAD")))
+                    inProgress = new RevertInProgress(fullpath);
+                else if (File.Exists(Path.Combine(gitDir, "MERGE_HEAD")))
+                    inProgress = new MergeInProgress(fullpath);
+                return (inProgress, hasUnsolvedConflict, changes.Count);
+            });
+        }
+
+
         private Repository _repo = null;
         private bool _isLoadingData = false;
         private bool _isStaging = false;

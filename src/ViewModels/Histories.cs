@@ -158,7 +158,14 @@ namespace SourceGit.ViewModels
                 AutoSelectedCommit = commit;
                 NavigationId = _navigationId + 1;
 
-                if (_detailContext is CommitDetail detail)
+
+                if (commit.IsWorkCopy)
+                {
+                    var wc = DetailContext as WorkingCopy ?? new WorkingCopy(_repo);
+                    DetailContext = wc;
+                    _ = wc.RefreshWorkingCopyChangesAsync();
+                }
+                else if (_detailContext is CommitDetail detail)
                 {
                     detail.Commit = commit;
                 }
@@ -228,13 +235,18 @@ namespace SourceGit.ViewModels
                 var canCherryPick = true;
                 foreach (var item in list.SelectedItems)
                 {
-                    if (item is Models.Commit c)
+                    if (item is Models.Commit { IsWorkCopy: false } c)
                     {
                         selected.Add(c);
 
                         if (c.IsMerged || c.Parents.Count > 1)
                             canCherryPick = false;
                     }
+                }
+
+                if (selected.Count == 0)
+                {
+                    return default;
                 }
 
                 var multipleMenu = new ContextMenu();
@@ -286,6 +298,10 @@ namespace SourceGit.ViewModels
             }
 
             var commit = (list.SelectedItem as Models.Commit)!;
+            if (commit.IsWorkCopy)
+            {
+                return default;
+            }
             var menu = new ContextMenu();
             var tags = new List<Models.Tag>();
 

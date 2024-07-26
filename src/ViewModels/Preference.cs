@@ -113,6 +113,12 @@ namespace SourceGit.ViewModels
             set => SetProperty(ref _maxHistoryCommits, value);
         }
 
+        public bool ShowUncommittedChangesInHistory
+        {
+            get => _showUncommittedChangesInHistory;
+            set => SetProperty(ref _showUncommittedChangesInHistory, value);
+        }
+
         public int SubjectGuideLength
         {
             get => _subjectGuideLength;
@@ -574,6 +580,7 @@ namespace SourceGit.ViewModels
         private LayoutInfo _layout = new LayoutInfo();
 
         private int _maxHistoryCommits = 20000;
+        private bool _showUncommittedChangesInHistory = false;
         private int _subjectGuideLength = 50;
         private bool _useFixedTabWidth = true;
 

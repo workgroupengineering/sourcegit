@@ -154,6 +154,10 @@ namespace SourceGit.ViewModels
 
         public List<Models.Object> GetRevisionFilesUnderFolder(string parentFolder)
         {
+            if (string.IsNullOrWhiteSpace(_commit.SHA))
+            {
+                return [];
+            }
             return new Commands.QueryRevisionObjects(_repo.FullPath, _commit.SHA, parentFolder).Result();
         }
 
